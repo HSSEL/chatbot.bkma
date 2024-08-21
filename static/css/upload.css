@@ -1,0 +1,21 @@
+/* upload.css */
+.upload-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  margin-right: 10px;
+  border: 1px solid var(--button-border);
+  padding: 5px;
+  border-radius: 5px;
+  background-color: var(--button-bg);
+}
+
+.upload-button img {
+  width: 24px;
+  height: 24px;
+}
+
+#file-input {
+  display: none; /* Hide the actual file input */
+}

@@ -1,0 +1,34 @@
+@import "./global.css";
+@import "./hljs.css";
+@import "./main.css";
+@import "./sidebar.css";
+@import "./conversation.css";
+@import "./message.css";
+@import "./stop-generating.css";
+@import "./typing.css";
+@import "./checkbox.css";
+@import "./label.css";
+@import "./button.css";
+@import "./buttons.css";
+@import "./dropdown.css";
+@import "./field.css";
+@import "./select.css";
+@import "./options.css";
+@import "./settings.css";
+@import "./message-input.css";
+@import "./upload.css";
+@import "./model-selector.css";
+@import "./clear-conversation.css";
+
+.upload-button {
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	margin-right: 10px;
+}
+
+.upload-button img {
+	width: 24px;
+	height: 24px;
+}

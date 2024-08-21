@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+    <meta name="full-screen" content="yes" />
+    <meta name="description" content="A conversational AI system that listens, learns, and challenges" />
+    <meta property="og:title" content="BKMA Chatbot" />
+    <meta property="og:image" content="https://encgt.ma/wp-content/uploads/2022/03/logo-bank-al-maghrib.png" />
+    <meta property="og:description" content="A conversational AI system that listens, learns, and challenges" />
+    <meta property="og:url" content="https://chat.acy.dev" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex/dist/katex.min.css">
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/markdown-it-texmath/texmath.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex/dist/katex.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/markdown-it-texmath/css/texmath.min.css">
+    <title>Bkam Chatbot</title>
+</head>
+<body data-urlprefix="{{ url_prefix }}">
+    <div class="main-container">
+        <div class="box sidebar">
+            <button class="button" id="sidebar-button" onclick="new_conversation()">
+                <i class="fa-regular fa-plus"></i>
+                <span>New Conversation</span>
+            </button>
+            <div class="top">                    
+                <div class="spinner"></div>
+            </div>
+            <div class="sidebar-footer">
+                <div class="settings-container">
+                    <div class="field">
+                        <span>Ollama Base URL</span>
+                        <input type="text" id="ollama-base-url" placeholder="Enter Ollama Base URL" />
+                    </div>
+                    <div class="field">
+                        <span>Model</span>
+                        <select class="dropdown" name="model" id="model-selector">
+                            <!-- Models will be populated dynamically -->
+                        </select>
+                    </div>
+                    <div class="field">
+                        <span>Use Case</span>
+                        <select class="dropdown" id="use-case-selector">
+                            <option value="QA">QA</option>
+                            <option value="Search">Search</option>
+                            <option value="Summarization">Summarization</option>
+                            <option value="Chat">Chat</option> 
+                        </select>
+                    </div>
+                    <div class="field">
+                        <span>Language</span>
+                        <select class="dropdown" id="language" onchange="changeLanguage(this.value)"></select>
+                    </div>
+                    <div class="field checkbox">
+                        <span>Web Access</span>                                    
+                        <input type="checkbox" id="switch" />
+                        <label for="switch"></label>
+                    </div>
+                    <div class="field checkbox">
+                        <span>Dark Mode</span>
+                        <input type="checkbox" id="theme-toggler" />
+                        <label for="theme-toggler"></label>
+                    </div>
+                    <div class="field checkbox fullscreen">
+                        <span>Fullscreen Mode</span>
+                        <input type="checkbox" id="fullscreen-toggle" />
+                        <label for="fullscreen-toggle"></label>
+                    </div>            
+                </div>
+            </div>
+        </div>
+        <div class="conversation">
+            <div class="stop-generating stop-generating-hidden">
+                <button class="button" id="cancelButton">
+                    <span>Stop Generating</span>
+                </button>
+            </div>
+            <div class="box" id="messages"></div>
+            <div class="user-input">
+                <div class="box input-box">
+                    <input type="file" id="file-input" style="display: none;" />
+                    <label for="file-input" class="upload-button">
+                        <img src="https://th.bing.com/th/id/OIP.rc-jptwGfHMDpYQoJwIm7wHaHa?rs=1&pid=ImgDetMain" alt="Upload Document" style="width: 24px; height: 24px;" />
+                    </label>
+                    <textarea
+                        id="message-input"
+                        placeholder="Ask a question"
+                        cols="30"
+                        rows="10"
+                        style="white-space: pre-wrap"></textarea>
+                    <div id="send-button">
+                        <i class="fa-regular fa-paper-plane-top"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="menu-button">
+        <i class="fa-solid fa-bars"></i>
+    </div>
+               
+    <!-- scripts -->
+    <script>window.conversation_id = "{{ chat_id }}";</script>
+    <script src="{{ url_for('static', filename='js/icons.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/chat.js') }}" defer></script>
+    <script src="{{ url_for('static', filename='js/markdown-it.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/highlight.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/highlightjs-copy.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/theme-toggler.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/sidebar-toggler.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/change-language.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/fullscreen-toggle.js') }}"></script>
+    <script>
+        document.getElementById('ollama-base-url').addEventListener('change', function() {
+            const baseUrl = this.value;
+            fetch(`/models?base_url=${baseUrl}`)
+                .then(response => response.json())
+                .then(data => {
+                    const modelSelector = document.getElementById('model-selector');
+                    modelSelector.innerHTML = '';
+                    data.models.forEach(model => {
+                        const option = document.createElement('option');
+                        option.value = model;
+                        option.textContent = model;
+                        modelSelector.appendChild(option);
+                    });
+                })
+                .catch(error => console.error('Error fetching models:', error));
+        });
+
+        document.getElementById('send-button').addEventListener('click', function() {
+            const useCase = document.getElementById('use-case-selector').value;
+            const model = document.getElementById('model-selector').value;
+            const fileInput = document.getElementById('file-input');
+            const messageInput = document.getElementById('message-input').value;
+            const formData = new FormData();
+
+            formData.append('use_case', useCase);
+            formData.append('model', model);
+            if (fileInput.files.length > 0) {
+                formData.append('file', fileInput.files[0]);
+            }
+            formData.append('message', messageInput);
+
+            fetch('/process', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                const messagesContainer = document.getElementById('messages');
+                const messageElement = document.createElement('div');
+                messageElement.classList.add('message');
+                messageElement.textContent = data.response;
+                messagesContainer.appendChild(messageElement);
+            })
+            .catch(error => console.error('Error processing request:', error));
+        });
+    </script>
+</body>
+</html>

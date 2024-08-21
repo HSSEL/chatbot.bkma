@@ -1,0 +1,27 @@
+select {
+	border-radius: 8px;
+	backdrop-filter: blur(20px);
+	cursor: pointer;
+	background-color: var(--blur-bg);
+	border: 1px solid var(--blur-border);
+	color: var(--colour-3);
+	display: block;
+	position: relative;
+	overflow: hidden;
+	outline: none;
+	padding: 8px 16px;
+	appearance: none;
+}
+
+select::-webkit-scrollbar {
+	width: 4px;
+}
+
+select::-webkit-scrollbar-track {
+	background: #ffffff00;
+}
+
+select::-webkit-scrollbar-thumb {
+	background-color: #555555;
+	border-radius: 10px;
+}

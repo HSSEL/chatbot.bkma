@@ -1,0 +1,22 @@
+/* model-selector.css */
+#model-selector {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid var(--dropdown-border);
+  border-radius: 5px;
+  background-color: var(--dropdown-bg);
+  color: var(--dropdown-text);
+}
+
+.dropdown {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid var(--dropdown-border);
+  border-radius: 5px;
+  background-color: var(--dropdown-bg);
+  color: var(--dropdown-text);
+}
+
+.dropdown option {
+  padding: 8px;
+}

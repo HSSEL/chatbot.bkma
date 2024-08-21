@@ -1,0 +1,17 @@
+#clear-conversation {
+  display: flex;
+  align-items: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+#clear-conversation img {
+  width: 24px; /* Adjust size as needed */
+  height: 24px; /* Adjust size as needed */
+  margin-right: 8px; /* Space between icon and text */
+}
+
+#clear-conversation span {
+  font-size: 14px; /* Adjust font size as needed */
+}
