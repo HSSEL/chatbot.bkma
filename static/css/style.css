@@ -32,3 +32,36 @@
 	width: 24px;
 	height: 24px;
 }
+
+
+/* Styles pour l'icône du PDF */
+#file-display img {
+	width: 24px;
+	height: 24px;
+	vertical-align: middle;
+	margin-right: 10px;
+}
+
+/* Styles pour le nom du fichier */
+#file-name {
+	color: #007bff;
+	text-decoration: none;
+	font-weight: bold;
+}
+
+#file-name:hover {
+	text-decoration: underline;
+}
+
+#file-display {
+	display: none; /* Caché par défaut */
+	border: 1px solid #ccc; /* Bordure légère */
+	border-radius: 5px; /* Coins arrondis */
+	padding: 10px; /* Espacement interne */
+	background-color: #262121; /* Fond blanc */
+	box-shadow: none; /* Pas d'ombre */
+	margin-bottom: 10px; /* Espace en bas */
+	display: flex; /* Flexbox pour l'alignement */
+	align-items: center; /* Alignement vertical au centre */
+	max-width: fit-content; /* La largeur s'ajuste au contenu */
+}

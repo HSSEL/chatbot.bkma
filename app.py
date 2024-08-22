@@ -51,7 +51,7 @@ def process_request():
                 response = "Please upload a PDF file and enter a question for QA."
 
         elif use_case == 'Chat':
-            if message:  # Ensure message is provided
+            if message:  
                 response = handle_chat(model, message, OLLAMA_BASE_URL)
             else:
                 response = "Please provide a message for chat."
@@ -79,6 +79,23 @@ def process_request():
         response = f"An error occurred: {str(e)}"
 
     return jsonify({'response': response})
+
+@app.route('/upload', methods=['POST'])
+def upload_file():
+    if 'file' not in request.files:
+        return jsonify({'error': 'No file part'})
+
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({'error': 'No selected file'})
+
+    if file:
+        file_path = f"uploads/{file.filename}"
+        file.save(file_path)
+        return jsonify({'message': 'File uploaded successfully'})
+    
+    return jsonify({'error': 'An error occurred'})
+
 
 def handle_chat(model, message, base_url):
     """
