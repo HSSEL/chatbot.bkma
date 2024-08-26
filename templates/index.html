@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
@@ -15,16 +16,21 @@
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/markdown-it-texmath/texmath.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/katex/dist/katex.min.js"></script>
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/markdown-it-texmath/css/texmath.min.css">
-    <title>Bkam Chatbot</title>
+    <title>BKMA Chatbot</title>
 </head>
+
 <body data-urlprefix="{{ url_prefix }}">
     <div class="main-container">
         <div class="box sidebar">
+            <div class="profile">
+                <img src="{{ url_for('static', filename='img/profil.png') }}" alt="Profile Icon" />
+                <span>{{ email }}</span> <!-- Affiche le nom d'utilisateur ou l'email à côté de l'icône de profil -->
+            </div>
             <button class="button" id="sidebar-button" onclick="new_conversation()">
                 <i class="fa-regular fa-plus"></i>
                 <span>New Conversation</span>
             </button>
-            <div class="top">                    
+            <div class="top">
                 <div class="spinner"></div>
             </div>
             <div class="sidebar-footer">
@@ -36,7 +42,7 @@
                     <div class="field">
                         <span>Model</span>
                         <select class="dropdown" name="model" id="model-selector">
-                            <!-- Models will be populated dynamically -->
+                            <!-- Les modèles seront peuplés dynamiquement -->
                         </select>
                     </div>
                     <div class="field">
@@ -45,15 +51,11 @@
                             <option value="QA">QA</option>
                             <option value="Search">Search</option>
                             <option value="Summarization">Summarization</option>
-                            <option value="Chat">Chat</option> 
+                            <option value="Chat">Chat</option>
                         </select>
                     </div>
-                    <div class="field">
-                        <span>Language</span>
-                        <select class="dropdown" id="language" onchange="changeLanguage(this.value)"></select>
-                    </div>
                     <div class="field checkbox">
-                        <span>Web Access</span>                                    
+                        <span>Web Access</span>
                         <input type="checkbox" id="switch" />
                         <label for="switch"></label>
                     </div>
@@ -66,7 +68,13 @@
                         <span>Fullscreen Mode</span>
                         <input type="checkbox" id="fullscreen-toggle" />
                         <label for="fullscreen-toggle"></label>
-                    </div>            
+                    </div>
+                    <div class="field">
+                        <button class="button" id="logout-button" onclick="logout()">
+                            <i class="fa-regular fa-sign-out-alt"></i>
+                            <span>Logout</span>
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -76,19 +84,21 @@
                     <span>Stop Generating</span>
                 </button>
             </div>
-            <div class="box" id="messages"></div>
+            <div class="box" id="messages">
+                <!-- Les messages apparaîtront ici -->
+            </div>
             <div class="user-input">
-                    <div id="file-display" style="display: none;">
-                        <a id="file-link" href="" download>
-                            <img src="../static/img/doc.png" alt="PDF Icon" />
-                            <span id="file-name"></span>
-                        </a>
-                    </div>
-                
+                <div id="file-display" style="display: none;">
+                    <a id="file-link" href="" download>
+                        <img src="{{ url_for('static', filename='img/doc.png') }}" alt="PDF Icon" />
+                        <span id="file-name"></span>
+                    </a>
+                </div>
+
                 <div class="box input-box">
                     <input type="file" id="file-input" style="display: none;" />
                     <label for="file-input" class="upload-button">
-                        <img src="../static/img/file (2).png" alt="Upload Document" style="width: 30px; height: 30px;" />
+                        <img src="{{ url_for('static', filename='img/file (2).png') }}" alt="Upload Document" style="width: 30px; height: 30px;" />
                     </label>
                     <textarea
                         id="message-input"
@@ -98,17 +108,17 @@
                         style="white-space: pre-wrap"></textarea>
                     <div id="send-button">
                         <i class="fa-regular fa-paper-plane-top"></i>
+                        
                     </div>
                 </div>
-               
             </div>
         </div>
     </div>
     <div class="menu-button">
         <i class="fa-solid fa-bars"></i>
     </div>
-               
-    <!-- scripts -->
+
+    <!-- Scripts -->
     <script>window.conversation_id = "{{ chat_id }}";</script>
     <script src="{{ url_for('static', filename='js/icons.js') }}"></script>
     <script src="{{ url_for('static', filename='js/chat.js') }}" defer></script>
@@ -117,7 +127,6 @@
     <script src="{{ url_for('static', filename='js/highlightjs-copy.min.js') }}"></script>
     <script src="{{ url_for('static', filename='js/theme-toggler.js') }}"></script>
     <script src="{{ url_for('static', filename='js/sidebar-toggler.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/change-language.js') }}"></script>
     <script src="{{ url_for('static', filename='js/fullscreen-toggle.js') }}"></script>
     <script src="{{ url_for('static', filename='js/form-handler.js') }}" defer></script>
     <script src="{{ url_for('static', filename='js/main.js') }}" defer></script>
@@ -168,8 +177,38 @@
                 messageElement.textContent = data.response;
                 messagesContainer.appendChild(messageElement);
             })
-            .catch(error => console.error('Error processing request:', error));
+            .catch(error => console.error('Error sending message:', error));
         });
+
+        document.getElementById('file-input').addEventListener('change', function() {
+            const file = this.files[0];
+            const fileLink = document.getElementById('file-link');
+            const fileName = document.getElementById('file-name');
+            const fileDisplay = document.getElementById('file-display');
+
+            if (file) {
+                fileLink.href = URL.createObjectURL(file);
+                fileName.textContent = file.name;
+                fileDisplay.style.display = 'block';
+            }
+        });
+
+        document.getElementById('theme-toggler').addEventListener('change', function() {
+            document.body.classList.toggle('theme-dark', this.checked);
+            document.body.classList.toggle('theme-light', !this.checked);
+        });
+
+        document.getElementById('fullscreen-toggle').addEventListener('change', function() {
+            if (this.checked) {
+                document.documentElement.requestFullscreen();
+            } else {
+                document.exitFullscreen();
+            }
+        });
+        function logout() {
+        window.location.href = "/logout";
+    }
     </script>
 </body>
+
 </html>

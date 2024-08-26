@@ -362,3 +362,62 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 	await load_conversations(20, 0, true);
 });
+
+
+// Fonction pour afficher l'indicateur de saisie
+function showTypingIndicator() {
+	const typingIndicator = document.getElementById('typing-indicator');
+	typingIndicator.classList.remove('typing-hidden');
+	typingIndicator.classList.add('typing');
+}
+
+// Fonction pour cacher l'indicateur de saisie
+function hideTypingIndicator() {
+	const typingIndicator = document.getElementById('typing-indicator');
+	typingIndicator.classList.remove('typing');
+	typingIndicator.classList.add('typing-hiding');
+	setTimeout(() => {
+			typingIndicator.classList.add('typing-hidden');
+			typingIndicator.classList.remove('typing-hiding');
+	}, 400); // Durée de l'animation hide_popup
+}
+
+// Exemple d'utilisation dans la gestion de la soumission des messages
+document.getElementById('send-button').addEventListener('click', function() {
+	// Afficher l'indicateur de saisie
+	showTypingIndicator();
+
+	const useCase = document.getElementById('use-case-selector').value;
+	const model = document.getElementById('model-selector').value;
+	const fileInput = document.getElementById('file-input');
+	const messageInput = document.getElementById('message-input').value;
+	const formData = new FormData();
+
+	formData.append('use_case', useCase);
+	formData.append('model', model);
+	if (fileInput.files.length > 0) {
+			formData.append('file', fileInput.files[0]);
+	}
+	formData.append('message', messageInput);
+
+	fetch('/process', {
+			method: 'POST',
+			body: formData
+	})
+	.then(response => response.json())
+	.then(data => {
+			// Masquer l'indicateur de saisie après réception de la réponse
+			hideTypingIndicator();
+
+			const messagesContainer = document.getElementById('messages');
+			const messageElement = document.createElement('div');
+			messageElement.classList.add('message');
+			messageElement.textContent = data.response;
+			messagesContainer.appendChild(messageElement);
+	})
+	.catch(error => {
+			// Masquer l'indicateur de saisie en cas d'erreur
+			hideTypingIndicator();
+			console.error('Error sending message:', error);
+	});
+});

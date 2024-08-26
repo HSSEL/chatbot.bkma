@@ -64,3 +64,20 @@ Open your web browser and go to:
 
 
 http://127.0.0.1:5000
+
+
+code sql (mysql)
+CREATE TABLE users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(255) NOT NULL,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    phone VARCHAR(20),
+    password VARCHAR(255) NOT NULL
+);
+CREATE TABLE IF NOT EXISTS chats (
+                            id INT AUTO_INCREMENT PRIMARY KEY,
+                            user_id INT NOT NULL,
+                            message TEXT NOT NULL,
+                            response TEXT,
+                            timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+                            FOREIGN KEY (user_id) REFERENCES users(id))

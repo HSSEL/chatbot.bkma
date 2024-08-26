@@ -14,6 +14,8 @@
 	background: #8b3dff;
 }
 
+
+
 @media screen and (max-width: 360px) {
 	#message-input {
 		margin: 0;

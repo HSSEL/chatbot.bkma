@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>User Profile</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+</head>
+<body>
+    <div class="profile-container">
+        <header>
+            <h1>{{ _('User Profile') }}</h1>
+            <nav>
+                <a href="{{ url_for('index') }}">{{ _('Home') }}</a>
+                <a href="{{ url_for('chat_history') }}">{{ _('Chat History') }}</a>
+                <a href="{{ url_for('logout') }}">{{ _('Logout') }}</a>
+            </nav>
+        </header>
+        <main>
+            <section class="profile-details">
+                <h2>{{ _('Profile Information') }}</h2>
+                <p><strong>{{ _('Email:') }}</strong> {{ email }}</p>
+                <!-- Display other user details if needed -->
+            </section>
+        </main>
+    </div>
+</body>
+</html>
