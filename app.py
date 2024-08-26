@@ -13,6 +13,7 @@ import os
 import mysql.connector
 from mysql.connector import Error
 from config import Config
+import asyncio
 
 # Load environment variables
 load_dotenv()
@@ -248,12 +249,12 @@ def process_request():
                 response = "Please provide a message for chat."
 
         elif use_case == "Search":
-            url = request.form.get('url')
-            if url:
-                content = search_url_content(url)
-                response = f"Content from {url}:\n\n{content}"
+            if message:  # Ensure the search query is provided
+                # Await the search_web function
+                search_results = asyncio.run(search_web(message))
+                response = f"Search results for '{message}':\n\n{search_results}"
             else:
-                response = "Please enter a URL for web search."
+                response = "Please enter a query for web search."
 
         elif use_case == "Summarization":
             if file:

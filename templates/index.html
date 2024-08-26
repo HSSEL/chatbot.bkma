@@ -54,6 +54,14 @@
                             <option value="Chat">Chat</option>
                         </select>
                     </div>
+                    <div id="pdf-list" class="hidden">
+                        <span>Uploaded pdfs</span>
+                        <ul>
+                            {% for pdf in pdf_files %}
+                                <li><a href="{{ url_for('static', filename='uploads/' + pdf) }}" target="_blank">{{ pdf }}</a></li>
+                            {% endfor %}
+                        </ul>
+                    </div>
                     <div class="field checkbox">
                         <span>Web Access</span>
                         <input type="checkbox" id="switch" />
