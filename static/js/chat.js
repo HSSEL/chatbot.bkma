@@ -164,11 +164,6 @@ const ask_gpt = async (message) => {
 	}
 };
 
-
-
-
-
-
 const add_user_message_box = (message) => {
 	const messageDiv = document.createElement('div');
 	messageDiv.className = 'message user';
@@ -182,6 +177,7 @@ const add_user_message_box = (message) => {
 	`;
 	message_box.appendChild(messageDiv);
 };
+
 const add_bot_message_box = (message) => {
 	const messageDiv = document.createElement('div');
 	messageDiv.className = 'message bot';
@@ -195,6 +191,7 @@ const add_bot_message_box = (message) => {
 	`;
 	message_box.appendChild(messageDiv);
 };
+
 const decodeUnicode = (str) => {
 	return str.replace(/\\u([a-fA-F0-9]{4})/g, function (match, grp) {
 			return String.fromCharCode(parseInt(grp, 16));
@@ -285,63 +282,34 @@ const load_conversation = async (conversation_id) => {
 			if (role === 'user') {
 					add_user_message_box(content);
 			} else if (role === 'assistant') {
-					add_message_box(content);
+					add_bot_message_box(content);
 			}
 	});
 };
 
-const load_conversations = async (limit = 20, offset = 0, fromStorage = false) => {
-	let conversations = fromStorage
-			? JSON.parse(localStorage.getItem('conversations') || '[]')
-			: await fetch_conversations();
+const load_conversations = async (limit, offset, reload = false) => {
+	const conversations = JSON.parse(localStorage.getItem('conversations') || '[]');
 
-	conversations = conversations.slice(offset, offset + limit);
+	if (reload) {
+			await clear_conversations();
+	}
 
-	clear_conversations();
-
-	conversations.forEach(({ id, title }) => {
-			const conversationDiv = createElement('div', {
-					classNames: ['conversation'],
-					textContent: title,
-					onclick: () => set_conversation(id),
-			});
-
+	conversations.slice(offset, offset + limit).forEach(({ id, title }) => {
+			const conversationDiv = document.createElement('div');
+			conversationDiv.className = 'conversation';
+			conversationDiv.innerHTML = `
+					<a href="${url_prefix}/chat/${id}">
+							<div class="conversation-title">${title}</div>
+					</a>
+			`;
 			box_conversations.appendChild(conversationDiv);
 	});
 };
 
-const fetch_conversations = async () => {
-	// Assuming there's an API endpoint to fetch conversations
-	const response = await fetch(`${url_prefix}/backend-api/v2/conversations`);
-	return response.json();
-};
-
-const createElement = (tag, { classNames = [], id = '', innerHTML = '', textContent = '', onclick = null }) => {
-	const el = document.createElement(tag);
-	el.className = classNames.join(' ');
-	el.id = id;
-	el.innerHTML = innerHTML;
-	el.textContent = textContent;
-	if (onclick) el.addEventListener('click', onclick);
-	return el;
-};
-
-// Event Listeners
-send_button.addEventListener("click", handle_ask);
-
-stop_generating.addEventListener('click', () => {
-	window.controller.abort();
-	stop_generating.classList.add('stop-generating-hidden');
-	stop_generating.classList.remove('stop-generating-hiding');
-});
-
-document.getElementById('delete-button').addEventListener('click', delete_conversations);
-
-// On page load
 document.addEventListener('DOMContentLoaded', async () => {
 	const urlParts = window.location.pathname.split('/');
 	const conversation_id = urlParts[urlParts.length - 1];
-	
+
 	if (conversation_id) {
 			await set_conversation(conversation_id);
 	} else {
@@ -351,61 +319,5 @@ document.addEventListener('DOMContentLoaded', async () => {
 	await load_conversations(20, 0, true);
 });
 
-
-// Fonction pour afficher l'indicateur de saisie
-function showTypingIndicator() {
-	const typingIndicator = document.getElementById('typing-indicator');
-	typingIndicator.classList.remove('typing-hidden');
-	typingIndicator.classList.add('typing');
-}
-
-// Fonction pour cacher l'indicateur de saisie
-function hideTypingIndicator() {
-	const typingIndicator = document.getElementById('typing-indicator');
-	typingIndicator.classList.remove('typing');
-	typingIndicator.classList.add('typing-hiding');
-	setTimeout(() => {
-			typingIndicator.classList.add('typing-hidden');
-			typingIndicator.classList.remove('typing-hiding');
-	}, 400); // Durée de l'animation hide_popup
-}
-
-// Exemple d'utilisation dans la gestion de la soumission des messages
-document.getElementById('send-button').addEventListener('click', function() {
-	// Afficher l'indicateur de saisie
-	showTypingIndicator();
-
-	const useCase = document.getElementById('use-case-selector').value;
-	const model = document.getElementById('model-selector').value;
-	const fileInput = document.getElementById('file-input');
-	const messageInput = document.getElementById('message-input').value;
-	const formData = new FormData();
-
-	formData.append('use_case', useCase);
-	formData.append('model', model);
-	if (fileInput.files.length > 0) {
-			formData.append('file', fileInput.files[0]);
-	}
-	formData.append('message', messageInput);
-
-	fetch('/process', {
-			method: 'POST',
-			body: formData
-	})
-	.then(response => response.json())
-	.then(data => {
-			// Masquer l'indicateur de saisie après réception de la réponse
-			hideTypingIndicator();
-
-			const messagesContainer = document.getElementById('messages');
-			const messageElement = document.createElement('div');
-			messageElement.classList.add('message');
-			messageElement.textContent = data.response;
-			messagesContainer.appendChild(messageElement);
-	})
-	.catch(error => {
-			// Masquer l'indicateur de saisie en cas d'erreur
-			hideTypingIndicator();
-			console.error('Error sending message:', error);
-	});
-});
+document.getElementById('send-button').addEventListener('click', handle_ask);
+document.getElementById('delete-button').addEventListener('click', delete_conversations);

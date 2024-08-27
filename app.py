@@ -225,6 +225,7 @@ def process_request():
     file = request.files.get('file')
     message = request.form.get('message')
     response = ""
+    bot_image_url = '/static/img/bot.png'  
 
     try:
         if use_case == "QA":
@@ -269,7 +270,7 @@ def process_request():
     except Exception as e:
         response = f"An error occurred: {str(e)}"
 
-    return jsonify({'response': response})
+    return jsonify({'response': response, 'bot_image': bot_image_url})
 
 @app.route('/backend-api/v2/conversations', methods=['GET', 'POST'])
 def conversations():
