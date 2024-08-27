@@ -58,31 +58,30 @@ const ask_gpt = async (message) => {
 			message_input.value = '';
 			message_input.innerHTML = '';
 			message_input.innerText = '';
-      add_user_message_box(message);
+
+			// Ajouter le message de l'utilisateur
+			add_user_message_box(message);
+
+			// Ajouter la conversation
 			add_conversation(window.conversation_id, message.substr(0, 16));
 			window.scrollTo(0, 0);
-			window.controller = new AbortController();
 
+			window.controller = new AbortController();
 			const jailbreak = document.getElementById("jailbreak");
 			const model = document.getElementById("model");
 			const provider = document.getElementById("provider");
+
 			prompt_lock = true;
 			window.text = '';
-			window.token = message_id();
+			window.token = message_id(); // Assurez-vous que cette fonction est définie
 
 			stop_generating.classList.remove('stop-generating-hidden');
 
-			add_user_message_box(message);
-
-			message_box.scrollTop = message_box.scrollHeight;
-			window.scrollTo(0, 0);
-			await new Promise((r) => setTimeout(r, 500));
-			window.scrollTo(0, 0);
-
+			// Ajouter la boîte de message pour le bot
 			message_box.innerHTML += `
 					<div class="message">
 							<div class="avatar-container">
-									${gpt_image}
+									${bot_image}
 							</div>
 							<div class="content" id="gpt_${window.token}">
 									<div id="cursor"></div>
@@ -92,7 +91,7 @@ const ask_gpt = async (message) => {
 
 			message_box.scrollTop = message_box.scrollHeight;
 			window.scrollTo(0, 0);
-			await new Promise((r) => setTimeout(r, 1000));
+			await new Promise((r) => setTimeout(r, 500));
 			window.scrollTo(0, 0);
 
 			const response = await fetch(`${url_prefix}/backend-api/v2/conversation`, {
@@ -127,35 +126,25 @@ const ask_gpt = async (message) => {
 
 			const reader = response.body.getReader();
 			let chunk = '';
-			
+
 			while (true) {
 					const { value, done } = await reader.read();
 					if (done) break;
 
 					chunk += decodeUnicode(new TextDecoder().decode(value));
-
-					if (chunk.includes(`<form id="challenge-form" action="${url_prefix}/backend-api/v2/conversation?`)) {
-							chunk = 'Cloudflare token expired, please refresh the page.';
-					}
-
 					window.text += chunk;
 
+					// Mettre à jour le message du bot
 					document.getElementById(`gpt_${window.token}`).innerHTML = markdown.render(window.text);
 					document.querySelectorAll('code').forEach((el) => {
 							hljs.highlightElement(el);
 					});
 
-					window.scrollTo(0, 0);
-					message_box.scrollTo({ top: message_box.scrollHeight, behavior: "auto" });
+					message_box.scrollTop = message_box.scrollHeight;
 			}
 
-			if (window.text.includes('instead. Maintaining this website and API costs a lot of money')) {
-					document.getElementById(`gpt_${window.token}`).innerHTML =
-							"An error occurred, please reload / refresh cache and try again.";
-			}
-
-			add_message(window.conversation_id, "user", message);
-			add_message(window.conversation_id, "assistant", window.text);
+			// Ajouter le message du bot après la fin de la lecture
+			add_bot_message_box(window.text);
 
 			message_box.scrollTop = message_box.scrollHeight;
 			await remove_cancel_button();
@@ -164,32 +153,21 @@ const ask_gpt = async (message) => {
 			await load_conversations(20, 0);
 			window.scrollTo(0, 0);
 	} catch (e) {
+			// Gestion des erreurs
+			console.error(e);
 			add_message(window.conversation_id, "user", message);
-
-			message_box.scrollTop = message_box.scrollHeight;
+			add_message(window.conversation_id, "assistant", "An error occurred, please try again.");
 			await remove_cancel_button();
 			prompt_lock = false;
-
 			await load_conversations(20, 0);
-
-			console.log(e);
-
-			let cursorDiv = document.getElementById('cursor');
-			if (cursorDiv) cursorDiv.parentNode.removeChild(cursorDiv);
-
-			if (e.name !== 'AbortError') {
-					let error_message = 'Oops! Something went wrong, please try again / reload. [stacktrace in console]';
-
-					document.getElementById(`gpt_${window.token}`).innerHTML = error_message;
-					add_message(window.conversation_id, "assistant", error_message);
-			} else {
-					document.getElementById(`gpt_${window.token}`).innerHTML += ' [aborted]';
-					add_message(window.conversation_id, "assistant", window.text + ' [aborted]');
-			}
-
 			window.scrollTo(0, 0);
 	}
 };
+
+
+
+
+
 
 const add_user_message_box = (message) => {
 	const messageDiv = document.createElement('div');

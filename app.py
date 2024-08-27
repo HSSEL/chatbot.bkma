@@ -253,8 +253,7 @@ def process_request():
                 # Await the search_web function
                 search_results = asyncio.run(search_web(message))
                 response = f"Search results for '{message}':\n\n{search_results}"
-            elif not message:
-                response = "Please enter a query for web search."
+           
 
         elif use_case == "Summarization":
             if file:

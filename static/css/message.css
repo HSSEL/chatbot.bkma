@@ -94,3 +94,18 @@
   background: #1eb136;
 	
 }
+
+.message.bot .content {
+	background: #f0f0f0; /* Couleur par défaut du message du bot */
+}
+
+/* Assurez-vous que le thème sombre et clair sont correctement appliqués */
+.theme-dark .message.bot .content {
+	background: #2a2a2a;
+	color: #ffffff;
+}
+
+.theme-light .message.bot .content {
+	background: #ffffff;
+	color: #000000;
+}
