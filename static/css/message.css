@@ -109,3 +109,8 @@
 	background: #ffffff;
 	color: #000000;
 }
+
+.message.bot .avatar-container img {
+	width: 50px; /* Example size, adjust as needed */
+	height: 50px; /* Example size, adjust as needed */
+}
