@@ -13,8 +13,8 @@ const box_conversations = document.querySelector('.top');
 const spinner = box_conversations.querySelector(".spinner");
 const stop_generating = document.querySelector('.stop-generating');
 const send_button = document.querySelector('#send-button');
-const user_image = `<img src="${url_prefix}/assets/img/user.png" alt="User Avatar">`;
-const gpt_image = `<img src="${url_prefix}/assets/img/gpt.png" alt="GPT Avatar">`;
+const user_image = `<img src="${url_prefix}/static/img/user.png" alt="User Avatar">`;
+const bot_image = `<img src="${url_prefix}/static/img/bot.png" alt="Bot Avatar">`;
 let prompt_lock = false;
 
 hljs.addPlugin(new CopyButtonPlugin());
@@ -58,7 +58,7 @@ const ask_gpt = async (message) => {
 			message_input.value = '';
 			message_input.innerHTML = '';
 			message_input.innerText = '';
-
+      add_user_message_box(message);
 			add_conversation(window.conversation_id, message.substr(0, 16));
 			window.scrollTo(0, 0);
 			window.controller = new AbortController();
@@ -192,21 +192,31 @@ const ask_gpt = async (message) => {
 };
 
 const add_user_message_box = (message) => {
-	const messageDiv = createElement('div', { classNames: ['message'] });
-	const avatarContainer = createElement('div', {
-			classNames: ['avatar-container'],
-			innerHTML: user_image,
-	});
-	const contentDiv = createElement('div', {
-			classNames: ['content'],
-			id: `user_${window.token}`,
-			textContent: message,
-	});
-
-	messageDiv.append(avatarContainer, contentDiv);
+	const messageDiv = document.createElement('div');
+	messageDiv.className = 'message user';
+	messageDiv.innerHTML = `
+			<div class="avatar-container">
+					${user_image}
+			</div>
+			<div class="content">
+					${message}
+			</div>
+	`;
 	message_box.appendChild(messageDiv);
 };
-
+const add_bot_message_box = (message) => {
+	const messageDiv = document.createElement('div');
+	messageDiv.className = 'message bot';
+	messageDiv.innerHTML = `
+			<div class="avatar-container">
+					${bot_image}
+			</div>
+			<div class="content">
+					${message}
+			</div>
+	`;
+	message_box.appendChild(messageDiv);
+};
 const decodeUnicode = (str) => {
 	return str.replace(/\\u([a-fA-F0-9]{4})/g, function (match, grp) {
 			return String.fromCharCode(parseInt(grp, 16));

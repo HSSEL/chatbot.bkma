@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, render_template, redirect, session, g
+from flask import Flask, request, jsonify, render_template, redirect, session, g,url_for
 from flask_bcrypt import Bcrypt
 from ollama_api import OllamaAPI
 from qa import perform_qa
@@ -232,7 +232,7 @@ def process_request():
                 file_path = f"uploads/{file.filename}"
                 file.save(file_path)
                 response = perform_qa(file_path, message, model, OLLAMA_BASE_URL)
-            else:
+            elif not file and message:
                 response = "Please upload a PDF file and enter a question for QA."
 
         elif use_case == 'Chat':
@@ -245,7 +245,7 @@ def process_request():
                                (current_user.id, message, response, datetime.utcnow()))
                 conn.commit()
                 conn.close()
-            else:
+            elif not message:
                 response = "Please provide a message for chat."
 
         elif use_case == "Search":
@@ -253,7 +253,7 @@ def process_request():
                 # Await the search_web function
                 search_results = asyncio.run(search_web(message))
                 response = f"Search results for '{message}':\n\n{search_results}"
-            else:
+            elif not message:
                 response = "Please enter a query for web search."
 
         elif use_case == "Summarization":
@@ -261,7 +261,7 @@ def process_request():
                 file_path = f"uploads/{file.filename}"
                 file.save(file_path)
                 response = summarize_pdf(file_path, model, OLLAMA_BASE_URL)
-            else:
+            elif not file and message:
                 response = "Please upload a PDF file for summarization."
 
         else:
