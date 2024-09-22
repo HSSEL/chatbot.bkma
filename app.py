@@ -14,7 +14,9 @@ import mysql.connector
 from mysql.connector import Error
 from config import Config
 import asyncio
-
+from itsdangerous import URLSafeTimedSerializer
+from flask_mail import Mail, Message
+from datetime import timedelta, datetime
 # Load environment variables
 load_dotenv()
 
@@ -29,6 +31,72 @@ bcrypt = Bcrypt(app)
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
 login_manager.login_message_category = 'info'
+
+# Set up mail configuration
+app.config['MAIL_SERVER'] = 'smtp.example.com'  # Use your SMTP server
+app.config['MAIL_PORT'] = 465
+app.config['MAIL_USERNAME'] = os.getenv('MAIL_USERNAME')
+app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD')
+app.config['MAIL_USE_TLS'] = False
+app.config['MAIL_USE_SSL'] = True
+
+mail = Mail(app)
+
+# Serializer for token generation
+s = URLSafeTimedSerializer(app.config['SECRET_KEY'])
+
+@app.route('/forgot-password', methods=['GET', 'POST'])
+def forgot_password():
+    if request.method == 'POST':
+        email = request.form['email']
+        
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute('SELECT * FROM users WHERE email = %s', (email,))
+        user = cursor.fetchone()
+        conn.close()
+        
+        if user:
+            # Generate token
+            token = s.dumps(email, salt='password-reset-salt')
+            reset_link = url_for('reset_password', token=token, _external=True)
+            expiry_time = datetime.utcnow() + timedelta(hours=1)  # 1-hour expiry
+
+            # Store the token and expiry in the DB
+            conn = get_db_connection()
+            cursor = conn.cursor()
+            cursor.execute('UPDATE users SET reset_token = %s, token_expiry = %s WHERE email = %s',
+                           (token, expiry_time, email))
+            conn.commit()
+            conn.close()
+
+            # Send email with reset link
+            msg = Message("Password Reset Request", sender="noreply@example.com", recipients=[email])
+            msg.body = f"Here is your password reset link: {reset_link}. It expires in 1 hour."
+            mail.send(msg)
+            
+            return render_template('forgot_password.html', message="Password reset link sent to your email.")
+        else:
+            return render_template('forgot_password.html', message="Email not found.")
+    
+    return render_template('forgot_password.html')
+
+
+@app.route('/reset-password', methods=['GET', 'POST'])
+def reset_password():
+    message = ""
+    if request.method == 'POST':
+        password = request.form.get('password')
+        confirm_password = request.form.get('confirm_password')
+        
+        if password != confirm_password:
+            message = "Les mots de passe ne correspondent pas."
+        else:
+            # Logique pour réinitialiser le mot de passe ici
+            message = "Mot de passe réinitialisé avec succès."
+    
+    return render_template('reset_password.html', message=message)
+
 
 
 @app.route('/models', methods=['GET'])
@@ -217,9 +285,60 @@ def upload_file():
     
     return jsonify({'error': 'An error occurred'})
 
+
 @app.route('/process', methods=['POST'])
 @login_required
 def process_request():
+    use_case = request.form.get('use_case')
+    model = request.form.get('model')
+    file = request.files.get('file')
+    message = request.form.get('message')
+    response = ""
+    bot_image_url = '/static/img/bot.png'  # URL to the bot image
+
+    try:
+        if use_case == "QA":
+            if file and message:
+                file_path = f"uploads/{file.filename}"
+                file.save(file_path)
+                response = perform_qa(file_path, message, model, OLLAMA_BASE_URL)
+            elif not file and message:
+                response = "Please upload a PDF file and enter a question for QA."
+
+        elif use_case == 'Chat':
+            if message:
+                response = handle_chat(model, message, OLLAMA_BASE_URL)
+                
+                conn = get_db_connection()
+                cursor = conn.cursor()
+                cursor.execute('INSERT INTO chats (user_id, message, response, timestamp) VALUES (%s, %s, %s, %s)',
+                               (current_user.id, message, response, datetime.utcnow()))
+                conn.commit()
+                conn.close()
+            elif not message:
+                response = "Please provide a message for chat."
+
+        elif use_case == "Search":
+            if message:  # Ensure the search query is provided
+                search_results = asyncio.run(search_web(message))
+                response = f"Search results for '{message}':\n\n{search_results}"
+
+        elif use_case == "Summarization":
+            if file:
+                file_path = f"uploads/{file.filename}"
+                file.save(file_path)
+                response = summarize_pdf(file_path, model, OLLAMA_BASE_URL)
+            elif not file and message:
+                response = "Please upload a PDF file for summarization."
+
+        else:
+            response = "Invalid use case."
+
+    except Exception as e:
+        response = f"An error occurred: {str(e)}"
+
+    return jsonify({'response': response, 'bot_image': bot_image_url})
+
     use_case = request.form.get('use_case')
     model = request.form.get('model')
     file = request.files.get('file')
@@ -275,12 +394,11 @@ def process_request():
 @app.route('/backend-api/v2/conversations', methods=['GET', 'POST'])
 def conversations():
     if request.method == 'GET':
-        # Handle the GET request for conversations
-        # Example: Return a list of conversations
+     
         return jsonify({"conversations": []}), 200
 
     if request.method == 'POST':
-        # Handle the POST request to create a new conversation
+        
         data = request.json
         # Process the data and create a new conversation
         return jsonify({"message": "Conversation created successfully!"}), 201

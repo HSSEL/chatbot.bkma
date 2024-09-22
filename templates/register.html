@@ -8,19 +8,18 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;600&display=swap" rel="stylesheet">
     <!-- Stylesheet -->
     <style media="screen">
-        *,
-        *:before,
-        *:after {
+        *, *:before, *:after {
             padding: 0;
             margin: 0;
             box-sizing: border-box;
         }
         body {
-            background-color: #080710;
+            background-color: #d5d2eb;
+            
         }
         .background {
             width: 430px;
-            height: 620px;
+            height: 520px;
             position: absolute;
             transform: translate(-50%, -50%);
             left: 50%;
@@ -33,23 +32,30 @@
             border-radius: 50%;
         }
         .shape:first-child {
-            background: linear-gradient(#1845ad, #23a2f6);
-            left: -80px;
-            top: -80px;
+            background: linear-gradient(#271f71, #292d7e);
+            left: -680px;
+            top: -180px;
+        }
+
+        .logo {
+          width: 600px;  
+          left:500px;
+          margin-top: -110px;
+            
         }
         .shape:last-child {
-            background: linear-gradient(to right, #ff512f, #f09819);
-            right: -30px;
-            bottom: -80px;
+            background: linear-gradient(to right, #bc8724, #bb8c35);
+            left: -200px;
+            bottom: -180px;
         }
         form {
-            height: 620px;
-            width: 400px;
+            height: 760px;
+            width: 500px;
             background-color: rgba(255, 255, 255, 0.13);
             position: absolute;
             transform: translate(-50%, -50%);
             top: 50%;
-            left: 50%;
+            left: 20%;
             border-radius: 10px;
             backdrop-filter: blur(10px);
             border: 2px solid rgba(255, 255, 255, 0.1);
@@ -58,7 +64,7 @@
         }
         form * {
             font-family: 'Poppins', sans-serif;
-            color: #ffffff;
+            color: #bc8724;
             letter-spacing: 0.5px;
             outline: none;
             border: none;
@@ -71,7 +77,7 @@
         }
         label {
             display: block;
-            margin-top: 20px;
+            margin-top: 30px;
             font-size: 16px;
             font-weight: 500;
         }
@@ -87,13 +93,13 @@
             font-weight: 300;
         }
         ::placeholder {
-            color: #e5e5e5;
+            color: #271f7185;
         }
         button {
-            margin-top: 50px;
-            width: 100%;
-            background-color: #ffffff;
-            color: #080710;
+            margin-top: 40px;
+            width: 95%;
+            background-color: #c69c4f;
+            color: #271f71;
             padding: 15px 0;
             font-size: 18px;
             font-weight: 600;
@@ -107,17 +113,23 @@
             font-size: 14px;
         }
         .links a {
-            color: #ffffff;
+            color: #271f71;
             text-decoration: none;
         }
         .links a:hover {
             text-decoration: underline;
+        }
+        .error {
+            color: red;
+            text-align: center;
+            margin-top: 20px;
         }
     </style>
 </head>
 <body>
     <div class="background">
         <div class="shape"></div>
+        <img class="logo" src="../static/img/logo.png">
         <div class="shape"></div>
     </div>
     <form method="POST" action="/register">
